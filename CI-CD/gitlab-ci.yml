@@ -1,0 +1,57 @@
+variables:
+  SSH_PRIVATE_KEY: "/home/sippy/.ssh/id_rsa"
+stages:
+  - build
+  - test_style
+  - test
+  - deploy
+
+job_build:
+  stage: build
+  script:
+    - ls
+    - cd src/cat
+    - make
+    - cd ../grep
+    - make
+  after_script:
+    - ls
+    - cd src/ && bash .notify.sh "stage = $CI_JOB_STAGE | job = $CI_JOB_NAME | status = $CI_JOB_STATUS"
+  artifacts:
+    paths:
+      - src/cat/s21_cat
+      - src/grep/s21_grep
+
+
+job_test_style:
+  stage: test_style
+  script:
+    - clang-format -n -Werror -style=google src/cat/*.c src/cat/*.h src/grep/*.c src/grep/*.h
+  after_script:
+    - cd src/ && bash .notify.sh "stage = $CI_JOB_STAGE | job = $CI_JOB_NAME | status = $CI_JOB_STATUS"
+  needs:
+    - job: job_build
+
+job_test:
+  stage: test
+  script:
+    - cd src/ && bash check_test.sh
+  after_script:
+    - cd src/ && bash .notify.sh "stage = $CI_JOB_STAGE | job = $CI_JOB_NAME | status = $CI_JOB_STATUS"
+  needs: 
+    - job: job_test_style
+    - job: job_build
+      artifacts: true
+
+job_deploy:
+  stage: deploy
+  script:
+    - cd src/ && bash deploy.sh
+  after_script:
+    - cd src/ && bash .notify.sh "stage = $CI_JOB_STAGE | job = $CI_JOB_NAME | status = $CI_JOB_STATUS"
+  needs:
+    - job: job_build
+      artifacts: true
+    - job: job_test_style
+    - job: job_test
+  when: manual

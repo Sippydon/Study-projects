@@ -1,0 +1,7 @@
+1 cd door_management_files
+2 cd door_configuration
+3 vim door_1.conf 
+4 i
+5 esc
+6 :w
+7 :q

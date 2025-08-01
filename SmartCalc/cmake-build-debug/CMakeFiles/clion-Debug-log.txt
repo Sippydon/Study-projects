@@ -1,0 +1,1 @@
+CMakeLists.txt not found in /home/sippydon/s21_projects/C7_SmartCalc_v1.0-1/src/smart_calc Select CMakeLists.txt
